@@ -11,29 +11,45 @@ class UI:
         # control
         self.general_options = ['attack', 'heal', 'switch', 'escape']
         self.general_index = {'col': 0, 'row': 0}
+        self.attack_index = {'col': 0, 'row': 0}
+        self.state = 'general'
+        self.rows, self.cols = 2,2
+    
 
     def input(self):
         keys = pygame.key.get_just_pressed()
-        self.general_index['row'] += int(keys[pygame.K_DOWN] - int(keys[pygame.K_UP]))
-        self.general_index['col'] += int(keys[pygame.K_RIGHT] - int(keys[pygame.K_LEFT]))
-        print(self.general_index)
+        if self.state == 'general':
+            self.general_index['row'] = (self.general_index['row'] + int(keys[pygame.K_DOWN] - int(keys[pygame.K_UP]))) % self.rows # this formula ensures the input does not escape the menu border
+            self.general_index['col'] = (self.general_index['col'] + int(keys[pygame.K_RIGHT] - int(keys[pygame.K_LEFT]))) % self.cols
+            if keys[pygame.K_SPACE]:
+                self.state = self.general_options[self.general_index['col'] + self.general_index['row'] * 2]
+
+        elif self.state == 'attack':
+            self.attack_index['row'] = (self.attack_index['row'] + int(keys[pygame.K_DOWN] - int(keys[pygame.K_UP]))) % self.rows # this formula ensures the input does not escape the menu border
+            self.attack_index['col'] = (self.attack_index['col'] + int(keys[pygame.K_RIGHT] - int(keys[pygame.K_LEFT]))) % self.cols
+            if keys[pygame.K_SPACE]:
+                print(self.monster.abilities[self.attack_index['col'] + self.attack_index['row'] * 2])
+                
+
         
 
-    def general(self):
+    # this entire method is a blackbox to me
+    def quad_select(self, index, options):
         # background
         rect = pygame.FRect(self.left + 40, self.top + 60, 400, 200)
         pygame.draw.rect(self.display_surf, COLORS['white'], rect, 0, 4)
         pygame.draw.rect(self.display_surf, COLORS['gray'], rect, 4, 4)
 
         # menu
-        cols, rows = 2,2
-        for col in range(cols):
-            for row in range(rows):
-                x = rect.left + rect.width / 4 + (rect.width / 2) * col # I do not yet understand how this works
-                y = rect.top + rect.height / 4 + (rect.height / 2) * row
+        for col in range(self.cols):
+            for row in range(self.rows):
+                x = rect.left + rect.width / (self.cols * 2) + (rect.width / self.cols) * col # I do not yet understand how this works
+                y = rect.top + rect.height / (self.rows * 2) + (rect.height / self.rows) * row
                 i = col + 2 * row
+                color = COLORS['gray'] if col == index['col'] and row == index['row'] else COLORS['black']
 
-                text_surf = self.font.render(self.general_options[i], True, 'black')
+
+                text_surf = self.font.render(options[i], True, color)
                 text_rect = text_surf.get_frect(center = (x,y))
                 self.display_surf.blit(text_surf, text_rect)
 
@@ -41,4 +57,6 @@ class UI:
         self.input()            
 
     def draw(self):
-        self.general()    
+        match self.state:
+            case 'general' : self.quad_select(self.general_index, self.general_options)    
+            case 'attack' : self.quad_select(self.attack_index, self.monster.abilities)
