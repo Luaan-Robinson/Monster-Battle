@@ -8,13 +8,16 @@ class Creature():
         self.abilities = sample(list(ABILITIES_DATA.keys()), 4)
         self.name = name
 
-
 class Monster(pygame.sprite.Sprite, Creature):
     def __init__(self, name, surf):
         super().__init__()
         self.image = surf
         self.rect = self.image.get_frect(bottomleft = (100, WINDOW_HEIGHT))
         self.get_data(name)
+
+    # method to return a value whenever this class is printed
+    def __repr__(self):
+        return f'{self.name}: {self.health}/{self.max_health}'   
     
 class Opponent(pygame.sprite.Sprite, Creature):
     def __init__(self, name, surf, groups):
