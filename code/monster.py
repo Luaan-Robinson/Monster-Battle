@@ -4,10 +4,17 @@ from random import sample
 class Creature():
     def get_data(self, name):
         self.element = MONSTER_DATA[name]['element']
-        self.health = self.max_health = MONSTER_DATA[name]['health'] # something within me says this line of code should be illegal, but it works
+        self._health = self.max_health = MONSTER_DATA[name]['health'] # something within me says this line of code should be illegal, but it works
         self.abilities = sample(list(ABILITIES_DATA.keys()), 4)
         self.name = name
-
+    
+    @property
+    def health(self):
+        return self._health
+    
+    @health.setter
+    def health(self, value):
+        self._health = min(self.max_health, max(0, value)) # prevents health from going under or over the limit
 class Monster(pygame.sprite.Sprite, Creature):
     def __init__(self, name, surf):
         super().__init__()
